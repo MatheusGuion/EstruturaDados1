@@ -1,48 +1,47 @@
 /*
   Estrutura de Dados I – Apl2 (2025.2)
-  Lista encadeada simples (sem usar coleções da linguagem)
-  Responsável por manter as linhas SEMPRE ordenadas pelo número.
+  GRUPO: BEATRIZ, EDUARDO E MATHEUS  
 */
 public class LinkedList {
     private Node head;
 
-    public Node getHead() { return head; }
+    public Node getHead() { return head; } //retorna o nó da cabeça da lista
 
-    public boolean isEmpty() { return head == null; }
+    public boolean isEmpty() { return head == null; }//verifica se a lista está vazia 
 
-    public Node find(int line) {
-        Node c = head;
+    public Node find(int line) {//encontra um nó baseado no numero da linha, retorna o nó se contrar null 
+        Node c = head;//começa pelo nó cabeça 
         while (c != null) {
-            if (c.lineNumber == line) return c;
-            if (c.lineNumber > line) return null;
+            if (c.lineNumber == line) return c;//linha encontrada 
+            if (c.lineNumber > line) return null;//se o número da linha atual for maior, a linha desejada não existe 
             c = c.next;
         }
         return null;
     }
 
-    // Insere ordenado; se existir, apenas atualiza. Retorna:
+    // insere ordenado(se existir, apenas atualiza.) Retorna:
     // 0 = inseriu, 1 = atualizou
     public int insertOrUpdate(int line, String instr, StringBuilder oldOut) {
         if (head == null) {
             head = new Node(line, instr);
-            return 0;
+            return 0;//inseriu 
         }
-        if (line < head.lineNumber) {
+        if (line < head.lineNumber) {//inserir antes da cabeça (novo head)
             Node n = new Node(line, instr);
             n.next = head;
             head = n;
-            return 0;
+            return 0;//inseriu 
         }
-        Node prev = null;
-        Node cur = head;
+        Node prev = null;//nó ant 
+        Node cur = head;//nó atual 
         while (cur != null && cur.lineNumber < line) {
             prev = cur; cur = cur.next;
-        }
+        }//atualiza nó existente
         if (cur != null && cur.lineNumber == line) {
             if (oldOut != null) oldOut.append(cur.instruction);
-            cur.instruction = instr;
+            cur.instruction = instr;//atualiza instrução
             return 1;
-        } else {
+        } else {//insere no meio ou no fim 
             Node n = new Node(line, instr);
             prev.next = n;
             n.next = cur;
@@ -50,9 +49,9 @@ public class LinkedList {
         }
     }
 
-    // Remove linha única; retorna a instrução removida ou null
+    //remove linha única; retorna a instrução removida ou null
     public String removeSingle(int line) {
-        if (head == null) return null;
+        if (head == null) return null;//lista vazia 
         if (head.lineNumber == line) {
             String s = head.instruction;
             head = head.next;
@@ -60,7 +59,7 @@ public class LinkedList {
         }
         Node cur = head;
         while (cur.next != null && cur.next.lineNumber < line) cur = cur.next;
-        if (cur.next != null && cur.next.lineNumber == line) {
+        if (cur.next != null && cur.next.lineNumber == line) { //remove nó no meio/fim
             String s = cur.next.instruction;
             cur.next = cur.next.next;
             return s;
@@ -77,7 +76,7 @@ public class LinkedList {
             count++;
         }
         Node cur = head;
-        while (cur != null && cur.next != null) {
+        while (cur != null && cur.next != null) { //percorre o resto da lista 
             if (cur.next.lineNumber >= a && cur.next.lineNumber <= b) {
                 if (outLines != null) outLines.append(cur.next.toString()).append('\n');
                 cur.next = cur.next.next;
@@ -86,16 +85,16 @@ public class LinkedList {
                 cur = cur.next;
             }
         }
-        return count;
+        return count; //retorno o total de nós removidos 
     }
-
+//calcula o tamanho da lista (n de nós)
     public int size() {
         int n = 0; Node c = head;
         while (c != null) { n++; c = c.next; }
         return n;
     }
 
-    // Preenche arrays paralelos com linhas/inst; retorno = quantidade
+    // preenche arrays paralelos com linhas/inst; retorno = quantidade
     public int toArrays(int[] lines, String[] inst) {
         int i = 0; Node c = head;
         while (c != null) {
@@ -106,7 +105,7 @@ public class LinkedList {
         return i;
     }
 
-    // Imprime 20 por tela
+    // imprime 20 por tela
     public void listPaged() {
         Node c = head; int shown = 0;
         while (c != null) {
