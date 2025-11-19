@@ -1,7 +1,4 @@
 10 mov a 5
 20 mov b 3
 30 mov x 0
-40 add x a
-50 dec b
-60 jnz b 40
 70 out x

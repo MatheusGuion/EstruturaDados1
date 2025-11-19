@@ -284,6 +284,7 @@ public class Main {
         String op = p[0].toLowerCase(Locale.ROOT);
 
         switch (op) {
+            //Lógica semelhante a do MOV, que foi implementado fora desse bloco
             case "mov" -> {
                 checkArgs(op, p, 3);
                 int x = regIndex(p[1], true); //Registrador do destino
@@ -293,28 +294,32 @@ public class Main {
                 return null;
             }
             case "inc" -> {
+                //INC X: incrementa o valor do registrador X em 1
                 checkArgs(op, p, 2);
-                int x = regIndex(p[1], false);
+                int x = regIndex(p[1], false);//Obtém o indíce do registrador X
                 ensureInitialized(x, 'X');//Verifica se o registrador foi inicializado
-                regs[x]++;
+                regs[x]++;//Incrementa o valor no array
                 return null;
             }
             case "dec" -> {
+                //DEC X: decrementa o valor do registrador X em 1
                 checkArgs(op, p, 2);
                 int x = regIndex(p[1], false);
                 ensureInitialized(x, 'X');
-                regs[x]--;
+                regs[x]--;//Decrementa o valor
                 return null;
             }
             case "add" -> {
+                //ADD X Y: adiciona o valor de Y ao valor de X (X = X + Y)
                 checkArgs(op, p, 3);
                 int x = regIndex(p[1], false);
                 ensureInitialized(x, 'X');
-                int y = value(p[2]);
-                regs[x] += y;
+                int y = value(p[2]);//Obtém o valor de Y
+                regs[x] += y;//Soma
                 return null;
             }
             case "sub" -> {
+                //SUB X Y: subtrai o valor de Y ao de X (Y = X - Y)
                 checkArgs(op, p, 3);
                 int x = regIndex(p[1], false);
                 ensureInitialized(x, 'X');
@@ -323,6 +328,7 @@ public class Main {
                 return null;
             }
             case "mul" -> {
+                //MUL X Y: multiplica o valor de Y ao de X (Y = X * Y)
                 checkArgs(op, p, 3);
                 int x = regIndex(p[1], false);
                 ensureInitialized(x, 'X');
@@ -331,25 +337,28 @@ public class Main {
                 return null;
             }
             case "div" -> {
+                //DIV X Y: divide o valor de Y ao de X (Y = X / Y)
                 checkArgs(op, p, 3);
                 int x = regIndex(p[1], false);
                 ensureInitialized(x, 'X');
                 int y = value(p[2]);
-                if (y == 0) throw new InterpretError("Erro: divisão por zero.");
+                if (y == 0) throw new InterpretError("Erro: divisão por zero.");//Validação para evitar divisão por zero
                 regs[x] /= y;
                 return null;
             }
             case "jnz" -> {
+                //JNZ X linha: salta para o número da linha se o valor de X for diferente de zero
                 checkArgs(op, p, 3);
                 int x = regIndex(p[1], false);
                 ensureInitialized(x, 'X');
                 int target;
                 try { target = Integer.parseInt(p[2]); }
                 catch (NumberFormatException e) { throw new InterpretError("Erro: linha de salto inválida."); }
-                if (regs[x] != 0) return target;
+                if (regs[x] != 0) return target;//Se diferente de 0, retorna a linha destino
                 return null;
             }
             case "out" -> {
+                //OUT X: imprime o valor do registrador X
                 checkArgs(op, p, 2);
                 int x = regIndex(p[1], false);
                 ensureInitialized(x, 'X');
@@ -362,49 +371,59 @@ public class Main {
 
     // ======= Helpers de validação =======
 
+    //Verifica se a quantidade de argumentos está correta para a operação
     private static void checkArgs(String op, String[] p, int expected) throws InterpretError {
         if (p.length != expected)
             throw new InterpretError("Erro: instrução " + op + " com quantidade inválida de argumentos.");
     }
 
+    //Cria uma correlação entre o token do registrador e índice do array
     private static int regIndex(String token, boolean dest) throws InterpretError {
         if (token.length() != 1) throw new InterpretError("Erro: registrador " + token.toUpperCase(Locale.ROOT) + " inválido.");
         char ch = Character.toLowerCase(token.charAt(0));
         if (ch < 'a' || ch > 'z') throw new InterpretError("Erro: registrador " + token.toUpperCase(Locale.ROOT) + " inválido.");
-        return ch - 'a';
+        return ch - 'a';//Exemp: 'a' -> 1, 'b' -> 2, e assim em diante
     }
 
+    //Lança um erro caso o registrador não tenha sido inicializado, com exceção para o MOV q inicia o registrador
     private static void ensureInitialized(int idx, char label) throws InterpretError {
         if (!initialized[idx]) {
             char regName = (char) ('A' + idx);
+            //Mensagem que mostra qual o registrador que não foi inicializado
             throw new InterpretError("Erro: registrador " + regName + " inválido.");
         }
     }
 
+    //Retorna o valor: podendo ser um inteiro literal ou conteúdo de um registrador
     private static int value(String tok) throws InterpretError {
         // inteiro ou registrador já inicializado
         try {
+            //Se não é literal, é um registrador
             return Integer.parseInt(tok);
         } catch (NumberFormatException ignore) {
             int r = regIndex(tok, false);
+            //Verifica se o registrador foi inicializado antes de retornar o valor
             if (!initialized[r]) {
                 char name = (char)('A' + r);
                 throw new InterpretError("Erro: registrador " + name + " inválido.");
             }
-            return regs[r];
+            return regs[r];//retorna o valor
         }
     }
 
+    //Encontra o índice no array de instruções correspondente ao número da linha
     private static int findLineIndex(int[] lines, int target) {
         for (int i = 0; i < lines.length; i++) if (lines[i] == target) return i;
-        return -1;
+        return -1;//Usado caso a linha não tenha sido encontrada
     }
 
+    //Aspas simples para ajudar na formatação
     private static String quote(String s) { return "'" + s + "'"; }
 
+    //Formata a linha de código para melhorar a exibição
     private static String formatLine(int n, String instr) { return n + " " + instr; }
 
-    // Exceção controlada para mensagens iguais às do PDF
+    // Exceção personalizada para controlar mensagens de erro do interpretador
     private static class InterpretError extends Exception {
         public InterpretError(String msg) { super(msg); }
     }
